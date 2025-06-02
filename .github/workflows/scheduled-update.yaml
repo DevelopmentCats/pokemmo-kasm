@@ -1,4 +1,4 @@
-name: Scheduled Update Check
+name: "🔄 Scheduled PokeMMO Update"
 
 on:
   schedule:
@@ -11,13 +11,14 @@ env:
 
 jobs:
   check-and-update:
+    name: "🔍 Check & Build New Version"
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Check for PokeMMO updates
@@ -72,7 +73,7 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.licenses=MIT
 
-      - name: Build and push
+      - name: Build and push new version
         if: steps.check.outputs.new_version != steps.check.outputs.current_version
         uses: docker/build-push-action@v5
         with:
@@ -82,3 +83,16 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Update status
+        if: always()
+        run: |
+          if [ "${{ steps.check.outputs.new_version }}" != "${{ steps.check.outputs.current_version }}" ]; then
+            if [ "${{ job.status }}" = "success" ]; then
+              echo "✅ Successfully updated to PokeMMO version ${{ steps.check.outputs.new_version }}"
+            else
+              echo "❌ Failed to update to PokeMMO version ${{ steps.check.outputs.new_version }}"
+            fi
+          else
+            echo "ℹ️ No update needed. Current version: ${{ steps.check.outputs.current_version }}"
+          fi

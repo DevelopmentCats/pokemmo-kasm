@@ -1,4 +1,4 @@
-name: Docker Build and Publish
+name: "🐳 Docker Build & Publish"
 
 on:
   push:
@@ -10,11 +10,15 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # Run tests first
   test:
+    name: "🧪 Run Tests"
     uses: ./.github/workflows/test.yml
 
+  # Only run publish after tests pass
   publish:
-    needs: test
+    name: "📦 Build & Push Image"
+    needs: test # This ensures publish only runs after test job succeeds
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     permissions:
