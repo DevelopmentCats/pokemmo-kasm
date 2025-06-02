@@ -3,11 +3,6 @@
 # Exit on any error and enable debug output
 set -ex
 
-echo "Creating required directories..."
-# Create required directories if they don't exist
-mkdir -p /pokemmo/{config,roms,data/mods}
-chown -R pokemmo:pokemmo /pokemmo
-
 # Required ROM files
 ROM_FILES=(
     "pokemon_black.nds"
@@ -49,7 +44,7 @@ if [ "$ROMS_MISSING" = true ]; then
     unzip -l PokeMMO-Roms.zip
     
     echo "Extracting to /pokemmo/roms/..."
-    if ! unzip -j -v PokeMMO-Roms.zip; then
+    if ! unzip -j PokeMMO-Roms.zip; then
         echo "Failed to extract ROMs"
         echo "unzip exit code: $?"
         echo "Current directory contents:"
@@ -77,7 +72,7 @@ fi
 # Set proper permissions
 echo "Setting permissions..."
 find /pokemmo/roms -type f -name "*.nds" -o -name "*.gba" -exec chmod 644 {} +
-chown -R pokemmo:pokemmo /pokemmo/{config,roms,data/mods}
+chown -R pokemmo:pokemmo /pokemmo/roms
 
 echo "ROM setup completed successfully"
 echo "Final contents of /pokemmo/roms:"

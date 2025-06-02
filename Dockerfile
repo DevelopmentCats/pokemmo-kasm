@@ -47,12 +47,12 @@ RUN mkdir -p /pokemmo && \
 # Create startup script
 RUN echo '#!/bin/bash\n\
 set -x\n\
-echo "Setting up ROMs..."\n\
-/usr/local/bin/setup-roms\n\
 echo "Changing to PokeMMO directory..."\n\
 cd /pokemmo\n\
 echo "Listing PokeMMO directory contents:"\n\
 ls -la\n\
+echo "Setting up ROMs..."\n\
+/usr/local/bin/setup-roms\n\
 echo "Starting PokeMMO client..."\n\
 if [ -f "PokeMMO.sh" ]; then\n\
   exec ./PokeMMO.sh\n\
