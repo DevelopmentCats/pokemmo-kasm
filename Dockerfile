@@ -36,7 +36,7 @@ RUN mkdir -p /pokemmo && \
     echo "Downloading PokeMMO client..." && \
     wget -v https://pokemmo.com/download_file/1/ -O PokeMMO-Client.zip && \
     echo "Extracting client..." && \
-    unzip -v PokeMMO-Client.zip && \
+    unzip PokeMMO-Client.zip && \
     rm -f PokeMMO-Client.zip && \
     echo "Setting up permissions..." && \
     chmod +x PokeMMO.sh && \
