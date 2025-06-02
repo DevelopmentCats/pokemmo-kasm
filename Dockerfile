@@ -1,19 +1,5 @@
-FROM ubuntu:22.04
-
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive \
-    DISPLAY=:0 \
-    LANG=en_US.UTF-8 \
-    HOME=/home/pokemmo
-
-# Add OpenContainers labels
-LABEL org.opencontainers.image.source=https://github.com/developmentcats/pokemmo-kasm
-LABEL org.opencontainers.image.description="PokeMMO client as X11 application"
-LABEL org.opencontainers.image.licenses=MIT
-
-# Create non-root user
-RUN groupadd -g 1000 pokemmo && \
-    useradd -m -d /home/pokemmo -s /bin/bash -u 1000 -g pokemmo pokemmo
+FROM kasmweb/core-ubuntu-focal:1.17.0
+USER root
 
 # Install minimal required packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -28,7 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender1 \
     libxtst6 \
     libxi6 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g prettier
 
 # Set up PokeMMO
 RUN mkdir -p /pokemmo && \
@@ -42,7 +34,7 @@ RUN mkdir -p /pokemmo && \
     chmod +x PokeMMO.sh && \
     echo "Contents of /pokemmo:" && \
     ls -la /pokemmo && \
-    chown -R pokemmo:pokemmo /pokemmo
+    chown -R 1000:1000 /pokemmo
 
 # Create startup script
 RUN echo '#!/bin/bash\n\
@@ -73,7 +65,23 @@ fi\n\
 COPY scripts/setup-roms.sh /usr/local/bin/setup-roms
 RUN chmod +x /usr/local/bin/setup-roms
 
+# Add OpenContainers labels
+LABEL org.opencontainers.image.source=https://github.com/developmentcats/pokemmo-kasm
+LABEL org.opencontainers.image.description="PokeMMO client as KASM workspace"
+LABEL org.opencontainers.image.licenses=MIT
+
 WORKDIR /pokemmo
-USER pokemmo
+ENV HOME=/home/kasm-default-profile
+ENV STARTUPDIR=/dockerstartup
+ENV INST_SCRIPTS=/dockerstartup/install
+ENV KASM_VNC_PATH=/usr/share/kasmvnc
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DISPLAY=:1
+ENV VNC_PORT=6901
+ENV VNC_RESOLUTION=1280x1024
+ENV MAX_FRAME_RATE=24
+ENV VNCOPTIONS="-PreferBandwidth -DynamicQualityMin=4 -DynamicQualityMax=7"
+
+USER 1000
 
 CMD ["/usr/local/bin/start-pokemmo"]
