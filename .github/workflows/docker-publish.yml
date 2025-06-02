@@ -48,37 +48,93 @@ jobs:
             maintainer=${{ github.actor }}
             org.opencontainers.image.version=${{ steps.pokemmo_version.outputs.version }}
 
-      - name: Test image
+      - name: Set up test environment
         run: |
           # Set up X11 for testing
           export DISPLAY=:99
           sudo Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-          sleep 3
+          echo "Waiting for Xvfb to start..."
+          sleep 5
+          
+          # Verify Xvfb is running
+          if ! ps aux | grep -v grep | grep Xvfb > /dev/null; then
+            echo "❌ Xvfb failed to start"
+            exit 1
+          fi
+          echo "✅ Xvfb is running"
 
-          # Run the container
+      - name: Run container tests
+        run: |
+          echo "Starting container..."
           docker run -d --name pokemmo \
             -e DISPLAY=:99 \
             -v /tmp/.X11-unix:/tmp/.X11-unix \
             ghcr.io/${{ github.repository_owner_id }}/${{ github.event.repository.name }}-test:${{ steps.pokemmo_version.outputs.version }}
 
-          # Wait for container to start
-          sleep 10
+          # Function to check container status
+          check_container() {
+            if ! docker ps -a --filter "name=pokemmo" --format "{{.Status}}" | grep -q "Up"; then
+              echo "❌ Container failed to start or crashed"
+              echo "Container logs:"
+              docker logs pokemmo
+              echo "Container status:"
+              docker ps -a --filter "name=pokemmo"
+              return 1
+            fi
+            return 0
+          }
 
-          # Check if container is running
-          docker ps | grep pokemmo
+          # Wait for container to be fully up (max 60 seconds)
+          echo "Waiting for container to start..."
+          for i in {1..12}; do
+            if check_container; then
+              echo "✅ Container is running"
+              break
+            fi
+            if [ $i -eq 12 ]; then
+              echo "❌ Container failed to start within 60 seconds"
+              exit 1
+            fi
+            echo "Still waiting... (attempt $i/12)"
+            sleep 5
+          done
 
-          # Check if Java process is running
-          docker exec pokemmo ps aux | grep java
+          echo "Checking Java process..."
+          if ! docker exec pokemmo ps aux | grep -v grep | grep java > /dev/null; then
+            echo "❌ Java process not running"
+            docker logs pokemmo
+            exit 1
+          fi
+          echo "✅ Java process is running"
 
-          # Check if ROMs were downloaded
-          docker exec pokemmo ls -l /pokemmo/roms/
+          echo "Checking ROM downloads..."
+          # Wait for ROMs to download (max 120 seconds)
+          for i in {1..24}; do
+            if docker exec pokemmo ls -l /pokemmo/roms/ | grep -q "\.nds\|\.gba"; then
+              echo "✅ ROMs downloaded successfully"
+              docker exec pokemmo ls -l /pokemmo/roms/
+              break
+            fi
+            if [ $i -eq 24 ]; then
+              echo "❌ ROM download timed out"
+              docker logs pokemmo
+              exit 1
+            fi
+            echo "Waiting for ROM downloads... (attempt $i/24)"
+            sleep 5
+          done
 
-          # Check logs for any errors
-          docker logs pokemmo
+          echo "Checking for errors in logs..."
+          if docker logs pokemmo 2>&1 | grep -i "error\|exception\|failed" > /dev/null; then
+            echo "❌ Found errors in container logs:"
+            docker logs pokemmo | grep -i "error\|exception\|failed"
+            exit 1
+          fi
+          echo "✅ No errors found in logs"
 
   publish:
     name: "📦 Build & Push Image"
-    needs: test # This ensures publish only runs after test job succeeds
+    needs: test
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     permissions:
@@ -105,10 +161,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=${{ needs.test.outputs.version }},enable=true
-            type=raw,value=latest,enable={{is.default}}
+            # Always tag with PokeMMO version
+            type=raw,value=${{ needs.test.outputs.version }}
+            # Tag as latest on default branch
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            # Tag with git version if this is a version tag
+            type=ref,event=tag
           labels: |
             org.opencontainers.image.title=PokeMMO Client
             org.opencontainers.image.description=PokeMMO client as X11 application
