@@ -39,15 +39,10 @@ RUN mkdir -p /pokemmo && \
     unzip -v PokeMMO-Client.zip && \
     rm -f PokeMMO-Client.zip && \
     echo "Setting up permissions..." && \
-    find . -type f -name "*.sh" -exec chmod +x {} + && \
-    mkdir -p /pokemmo/{config,roms,data/mods} && \
+    chmod +x PokeMMO.sh && \
     echo "Contents of /pokemmo:" && \
     ls -la /pokemmo && \
     chown -R pokemmo:pokemmo /pokemmo
-
-# Copy ROM setup script
-COPY scripts/setup-roms.sh /usr/local/bin/setup-roms
-RUN chmod +x /usr/local/bin/setup-roms
 
 # Create startup script
 RUN echo '#!/bin/bash\n\
@@ -59,20 +54,24 @@ cd /pokemmo\n\
 echo "Listing PokeMMO directory contents:"\n\
 ls -la\n\
 echo "Starting PokeMMO client..."\n\
-if [ -f "PokeMMO.jar" ]; then\n\
+if [ -f "PokeMMO.sh" ]; then\n\
+  exec ./PokeMMO.sh\n\
+elif [ -f "PokeMMO.jar" ]; then\n\
   exec java -Xmx384M -Dfile.encoding="UTF-8" -Djava.awt.headless=false -jar PokeMMO.jar\n\
 elif [ -f "PokeMMO.exe" ]; then\n\
   exec java -Xmx384M -Dfile.encoding="UTF-8" -Djava.awt.headless=false -jar PokeMMO.exe\n\
-elif [ -f "data/PokeMMO.sh" ]; then\n\
-  exec ./data/PokeMMO.sh\n\
 else\n\
   echo "ERROR: No PokeMMO executable found!"\n\
+  echo "Root directory contents:"\n\
   ls -la\n\
-  ls -la data/\n\
   exit 1\n\
 fi\n\
 ' > /usr/local/bin/start-pokemmo && \
     chmod +x /usr/local/bin/start-pokemmo
+
+# Copy ROM setup script
+COPY scripts/setup-roms.sh /usr/local/bin/setup-roms
+RUN chmod +x /usr/local/bin/setup-roms
 
 WORKDIR /pokemmo
 USER pokemmo
