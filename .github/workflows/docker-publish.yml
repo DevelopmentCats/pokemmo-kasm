@@ -8,8 +8,8 @@ on:
     branches: [ "main" ]
 
 env:
-  REGISTRY: forge.dualriver.com
-  IMAGE_NAME: cat/pokemmo-docker
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -30,8 +30,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: cat
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract Docker metadata
         id: meta

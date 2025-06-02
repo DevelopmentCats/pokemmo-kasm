@@ -25,7 +25,7 @@ The following ROMs are required and will be automatically downloaded:
 
 1. Pull the latest image:
 ```bash
-docker pull forge.dualriver.com/cat/pokemmo-docker:latest
+docker pull ghcr.io/developmentcats/pokemmo-kasm:latest
 ```
 
 2. Run the container:
@@ -36,7 +36,7 @@ docker run -it \
     -v $HOME/.Xauthority:/home/pokemmo/.Xauthority:ro \
     --device /dev/snd \
     --name pokemmo \
-    forge.dualriver.com/cat/pokemmo-docker:latest
+    ghcr.io/developmentcats/pokemmo-kasm:latest
 ```
 
 ## Persistent Storage
@@ -63,6 +63,14 @@ This container is automatically updated through GitHub Actions:
 - Minimal container footprint
 - Read-only ROM access
 - Secure X11 forwarding
+
+## Container Registry
+
+This image is hosted on GitHub Container Registry (ghcr.io) and is publicly available. You can:
+- Pull without authentication
+- View container details at: https://github.com/DevelopmentCats/pokemmo-kasm/pkgs/container/pokemmo-kasm
+- Use version tags for specific releases
+- Always get the latest version with the `:latest` tag
 
 ## License
 

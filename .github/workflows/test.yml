@@ -21,7 +21,7 @@ jobs:
         with:
           context: .
           load: true
-          tags: pokemmo-test:latest
+          tags: ghcr.io/${{ github.repository }}-test:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -36,7 +36,7 @@ jobs:
           docker run -d --name pokemmo \
             -e DISPLAY=:99 \
             -v /tmp/.X11-unix:/tmp/.X11-unix \
-            pokemmo-test:latest
+            ghcr.io/${{ github.repository }}-test:latest
 
           # Wait for container to start
           sleep 10
