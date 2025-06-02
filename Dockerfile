@@ -1,4 +1,4 @@
-FROM kasmweb/core-ubuntu-focal:1.17.0
+FROM kasmweb/core-ubuntu-jammy:1.17.0
 USER root
 
 # Install minimal required packages
