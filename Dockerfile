@@ -7,9 +7,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     HOME=/home/pokemmo
 
 # Create non-root user
-RUN useradd -m -d /home/pokemmo -s /bin/bash pokemmo && \
-    groupadd -g 1000 pokemmo && \
-    usermod -u 1000 -g 1000 pokemmo
+RUN groupadd -g 1000 pokemmo && \
+    useradd -m -d /home/pokemmo -s /bin/bash -u 1000 -g pokemmo pokemmo
 
 # Install minimal required packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
