@@ -48,7 +48,7 @@ jobs:
             maintainer=${{ github.actor }}
             org.opencontainers.image.version=${{ steps.pokemmo_version.outputs.version }}
 
-      - name: Run critical tests
+      - name: Run Critical Tests
         run: |
           echo "Starting container for critical tests..."
           docker run -d --name pokemmo \
