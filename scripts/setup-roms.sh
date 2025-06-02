@@ -6,6 +6,7 @@ set -ex
 echo "Creating required directories..."
 # Create required directories if they don't exist
 mkdir -p /pokemmo/{config,roms,data/mods}
+chown -R pokemmo:pokemmo /pokemmo
 
 # Required ROM files
 ROM_FILES=(
@@ -33,8 +34,13 @@ if [ "$ROMS_MISSING" = true ]; then
     ROMS_URL="https://dir.chesher.xyz/Media/PokeMMO/PokeMMO-Roms.zip"
     
     echo "Attempting download from: $ROMS_URL"
-    # Attempt download with more verbose output
-    if ! wget -v --timeout=30 "$ROMS_URL" -O /tmp/PokeMMO-Roms.zip; then
+    # Create temp directory owned by pokemmo user
+    mkdir -p /tmp/pokemmo-roms
+    chown pokemmo:pokemmo /tmp/pokemmo-roms
+    
+    # Download as pokemmo user
+    cd /tmp/pokemmo-roms
+    if ! sudo -u pokemmo wget -v --timeout=30 "$ROMS_URL" -O PokeMMO-Roms.zip; then
         echo "Failed to download ROMs from primary source"
         echo "wget exit code: $?"
         echo "Current directory contents:"
@@ -46,22 +52,23 @@ if [ "$ROMS_MISSING" = true ]; then
     
     echo "Download completed. Extracting ROMs..."
     echo "Contents of downloaded file:"
-    unzip -l /tmp/PokeMMO-Roms.zip
+    unzip -l PokeMMO-Roms.zip
     
     echo "Extracting to /pokemmo/roms/..."
-    if ! unzip -j -v /tmp/PokeMMO-Roms.zip -d /pokemmo/roms/; then
+    if ! sudo -u pokemmo unzip -j -v PokeMMO-Roms.zip -d /pokemmo/roms/; then
         echo "Failed to extract ROMs"
         echo "unzip exit code: $?"
         echo "Current directory contents:"
         ls -la
         echo "/pokemmo/roms contents:"
         ls -la /pokemmo/roms/
-        rm -f /tmp/PokeMMO-Roms.zip
+        rm -f PokeMMO-Roms.zip
         exit 1
     fi
     
     # Clean up
-    rm -f /tmp/PokeMMO-Roms.zip
+    cd /
+    rm -rf /tmp/pokemmo-roms
     echo "ROMs extracted successfully"
     
     # Verify all required ROMs are present

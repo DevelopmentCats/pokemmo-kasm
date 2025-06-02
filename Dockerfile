@@ -39,7 +39,7 @@ RUN mkdir -p /pokemmo && \
     unzip -v PokeMMO-Client.zip && \
     rm -f PokeMMO-Client.zip && \
     echo "Setting up permissions..." && \
-    chmod +x PokeMMO.sh && \
+    find . -type f -name "*.sh" -exec chmod +x {} + && \
     mkdir -p /pokemmo/{config,roms,data/mods} && \
     echo "Contents of /pokemmo:" && \
     ls -la /pokemmo && \
@@ -63,9 +63,12 @@ if [ -f "PokeMMO.jar" ]; then\n\
   exec java -Xmx384M -Dfile.encoding="UTF-8" -Djava.awt.headless=false -jar PokeMMO.jar\n\
 elif [ -f "PokeMMO.exe" ]; then\n\
   exec java -Xmx384M -Dfile.encoding="UTF-8" -Djava.awt.headless=false -jar PokeMMO.exe\n\
+elif [ -f "data/PokeMMO.sh" ]; then\n\
+  exec ./data/PokeMMO.sh\n\
 else\n\
-  echo "ERROR: Neither PokeMMO.jar nor PokeMMO.exe found!"\n\
+  echo "ERROR: No PokeMMO executable found!"\n\
   ls -la\n\
+  ls -la data/\n\
   exit 1\n\
 fi\n\
 ' > /usr/local/bin/start-pokemmo && \
