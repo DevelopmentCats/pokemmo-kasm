@@ -1,0 +1,45 @@
+{
+    "friendly_name": "PokeMMO",
+    "description": "PokeMMO client as X11 application",
+    "image_src": "https://pokemmo.com/build/images/opengraph.ce52eb8f.png",
+    "name": "pokemmo",
+    "cores": 2,
+    "memory": 2768,
+    "gpu_count": 0,
+    "cpu_allocation_method": "Inherit",
+    "image": "pokemmo:latest",
+    "categories": [
+        "Gaming"
+    ],
+    "require_gpu": false,
+    "enabled": true,
+    "image_type": "Container",
+    "architecture": [
+        "amd64"
+    ],
+    "compatibility": [
+        "1.14.x",
+        "1.15.x"
+    ],
+    "uncompressed_size_mb": 1024,
+    "persistent_profile_config": {
+        "/pokemmo/config": {
+            "bind": true,
+            "bind_mode": "rw",
+            "require_startup": false,
+            "description": "PokeMMO configuration and save data"
+        },
+        "/pokemmo/roms": {
+            "bind": true,
+            "bind_mode": "ro",
+            "require_startup": false,
+            "description": "PokeMMO ROM files"
+        },
+        "/pokemmo/data/mods": {
+            "bind": true,
+            "bind_mode": "rw",
+            "require_startup": false,
+            "description": "PokeMMO mods"
+        }
+    }
+} 
