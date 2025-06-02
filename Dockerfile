@@ -33,11 +33,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set up PokeMMO
 RUN mkdir -p /pokemmo && \
     cd /pokemmo && \
-    wget https://pokemmo.com/download_file/1/ -O PokeMMO-Client.zip && \
-    unzip PokeMMO-Client.zip && \
+    echo "Downloading PokeMMO client..." && \
+    wget -v https://pokemmo.com/download_file/1/ -O PokeMMO-Client.zip && \
+    echo "Extracting client..." && \
+    unzip -v PokeMMO-Client.zip && \
     rm -f PokeMMO-Client.zip && \
+    echo "Setting up permissions..." && \
     chmod +x PokeMMO.sh && \
     mkdir -p /pokemmo/{config,roms,data/mods} && \
+    echo "Contents of /pokemmo:" && \
+    ls -la /pokemmo && \
     chown -R pokemmo:pokemmo /pokemmo
 
 # Copy ROM setup script
@@ -46,9 +51,23 @@ RUN chmod +x /usr/local/bin/setup-roms
 
 # Create startup script
 RUN echo '#!/bin/bash\n\
+set -x\n\
+echo "Setting up ROMs..."\n\
 /usr/local/bin/setup-roms\n\
+echo "Changing to PokeMMO directory..."\n\
 cd /pokemmo\n\
-exec java -Xmx384M -Dfile.encoding="UTF-8" -Djava.awt.headless=false -cp PokeMMO.exe com.pokeemu.client.Client\n\
+echo "Listing PokeMMO directory contents:"\n\
+ls -la\n\
+echo "Starting PokeMMO client..."\n\
+if [ -f "PokeMMO.jar" ]; then\n\
+  exec java -Xmx384M -Dfile.encoding="UTF-8" -Djava.awt.headless=false -jar PokeMMO.jar\n\
+elif [ -f "PokeMMO.exe" ]; then\n\
+  exec java -Xmx384M -Dfile.encoding="UTF-8" -Djava.awt.headless=false -jar PokeMMO.exe\n\
+else\n\
+  echo "ERROR: Neither PokeMMO.jar nor PokeMMO.exe found!"\n\
+  ls -la\n\
+  exit 1\n\
+fi\n\
 ' > /usr/local/bin/start-pokemmo && \
     chmod +x /usr/local/bin/start-pokemmo
 
