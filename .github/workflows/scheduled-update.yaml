@@ -54,8 +54,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.check.outputs.version }}
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository_owner_id }}/${{ github.event.repository.name }}:${{ steps.check.outputs.version }}
+            ghcr.io/${{ github.repository_owner_id }}/${{ github.event.repository.name }}:latest
           labels: |
             maintainer=${{ github.actor }}
             org.opencontainers.image.version=${{ steps.check.outputs.version }}

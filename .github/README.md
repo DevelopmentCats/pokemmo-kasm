@@ -68,7 +68,7 @@ This container is automatically updated through GitHub Actions:
 
 This image is hosted on GitHub Container Registry (ghcr.io) and is publicly available. You can:
 - Pull without authentication
-- View container details at: https://github.com/DevelopmentCats/pokemmo-kasm/pkgs/container/pokemmo-kasm
+- View container details at: https://github.com/developmentcats/pokemmo-kasm/pkgs/container/pokemmo-kasm
 - Use version tags for specific releases
 - Always get the latest version with the `:latest` tag
 
