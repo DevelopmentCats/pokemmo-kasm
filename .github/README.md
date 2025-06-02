@@ -14,7 +14,7 @@ A lightweight Docker container for running PokeMMO as an X11 application. This c
 
 ## Required ROMs
 
-The following ROMs are required and will be automatically downloaded:
+The following ROMs are required and will be automatically downloaded during first launch:
 - Pokemon Black (NDS)
 - Pokemon Emerald (GBA)
 - Pokemon FireRed (GBA)
@@ -26,6 +26,11 @@ The following ROMs are required and will be automatically downloaded:
 1. Pull the latest image:
 ```bash
 docker pull ghcr.io/developmentcats/pokemmo-kasm:latest
+```
+
+You can also use a specific version by replacing `latest` with a version number:
+```bash
+docker pull ghcr.io/developmentcats/pokemmo-kasm:28887  # Replace with actual version
 ```
 
 2. Run the container:
@@ -44,18 +49,32 @@ docker run -it \
 Mount these volumes to persist data between container restarts:
 
 ```bash
--v ./config:/pokemmo/config \
--v ./roms:/pokemmo/roms \
--v ./mods:/pokemmo/data/mods
+docker run -it \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v $HOME/.Xauthority:/home/pokemmo/.Xauthority:ro \
+    -v ./config:/pokemmo/config \
+    -v ./roms:/pokemmo/roms \
+    -v ./mods:/pokemmo/data/mods \
+    --device /dev/snd \
+    --name pokemmo \
+    ghcr.io/developmentcats/pokemmo-kasm:latest
 ```
 
 ## Automated Updates
 
 This container is automatically updated through GitHub Actions:
-- Daily checks for new PokeMMO versions
-- Automatic builds on code changes
-- Version-tagged images
+- Daily checks at 3 AM UTC for new PokeMMO versions
+- Automatic builds when new PokeMMO versions are detected
+- Version-tagged images matching PokeMMO version numbers
 - Latest tag always points to most recent build
+- Automated testing before any image is published
+
+## Version Tags
+
+The container follows PokeMMO's version numbering:
+- `:latest` - Always points to the most recent version
+- `:{version}` - Points to specific PokeMMO versions (e.g., `:28887`)
 
 ## Security
 
@@ -63,6 +82,7 @@ This container is automatically updated through GitHub Actions:
 - Minimal container footprint
 - Read-only ROM access
 - Secure X11 forwarding
+- Automated security scanning through GitHub Actions
 
 ## Container Registry
 
@@ -70,7 +90,20 @@ This image is hosted on GitHub Container Registry (ghcr.io) and is publicly avai
 - Pull without authentication
 - View container details at: https://github.com/developmentcats/pokemmo-kasm/pkgs/container/pokemmo-kasm
 - Use version tags for specific releases
-- Always get the latest version with the `:latest` tag
+- Track image history and changes
+- View security scan results
+
+## Troubleshooting
+
+If you encounter X11 forwarding issues:
+1. Ensure you have X11 running on your host
+2. Check that the DISPLAY variable is set correctly
+3. Verify .Xauthority permissions
+
+For ROM-related issues:
+1. Check the container logs: `docker logs pokemmo`
+2. Verify ROM files in the mounted directory
+3. Check file permissions if using persistent storage
 
 ## License
 

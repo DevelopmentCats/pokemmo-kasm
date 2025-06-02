@@ -6,6 +6,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=en_US.UTF-8 \
     HOME=/home/pokemmo
 
+# Add OpenContainers labels
+LABEL org.opencontainers.image.source=https://github.com/developmentcats/pokemmo-kasm
+LABEL org.opencontainers.image.description="PokeMMO client as X11 application"
+LABEL org.opencontainers.image.licenses=MIT
+
 # Create non-root user
 RUN groupadd -g 1000 pokemmo && \
     useradd -m -d /home/pokemmo -s /bin/bash -u 1000 -g pokemmo pokemmo
