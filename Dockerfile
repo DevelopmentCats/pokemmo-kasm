@@ -32,6 +32,45 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xcompmgr \
     && rm -rf /var/lib/apt/lists/*
 
+# Configure XFCE panel to auto-hide by default
+RUN mkdir -p /etc/xdg/xfce4/panel && \
+    echo '<?xml version="1.0" encoding="UTF-8"?>\n\
+<channel name="xfce4-panel" version="1.0">\n\
+  <property name="configver" type="int" value="2"/>\n\
+  <property name="panels" type="array">\n\
+    <value type="int" value="1"/>\n\
+    <property name="panel-1" type="empty">\n\
+      <property name="position" type="string" value="p=6;x=640;y=0"/>\n\
+      <property name="length" type="uint" value="100"/>\n\
+      <property name="position-locked" type="bool" value="true"/>\n\
+      <property name="size" type="uint" value="30"/>\n\
+      <property name="autohide-behavior" type="uint" value="1"/>\n\
+      <property name="enable-struts" type="bool" value="false"/>\n\
+      <property name="plugin-ids" type="array">\n\
+        <value type="int" value="1"/>\n\
+        <value type="int" value="3"/>\n\
+        <value type="int" value="15"/>\n\
+        <value type="int" value="4"/>\n\
+        <value type="int" value="5"/>\n\
+        <value type="int" value="6"/>\n\
+        <value type="int" value="2"/>\n\
+      </property>\n\
+    </property>\n\
+  </property>\n\
+  <property name="plugins" type="empty">\n\
+    <property name="plugin-1" type="string" value="applicationsmenu"/>\n\
+    <property name="plugin-2" type="string" value="actions"/>\n\
+    <property name="plugin-3" type="string" value="tasklist"/>\n\
+    <property name="plugin-15" type="string" value="separator">\n\
+      <property name="expand" type="bool" value="true"/>\n\
+      <property name="style" type="uint" value="0"/>\n\
+    </property>\n\
+    <property name="plugin-4" type="string" value="pager"/>\n\
+    <property name="plugin-5" type="string" value="clock"/>\n\
+    <property name="plugin-6" type="string" value="systray"/>\n\
+  </property>\n\
+</channel>' > /etc/xdg/xfce4/panel/default.xml
+
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
@@ -89,7 +128,14 @@ if ! pgrep -x "xcompmgr" > /dev/null; then\n\
     sleep 1\n\
 fi\n\
 \n\
-START_COMMAND="cd /pokemmo && ./PokeMMO.sh --fullscreen"\n\
+# Configure XFCE panel to auto-hide\n\
+if command -v xfconf-query >/dev/null 2>&1; then\n\
+    echo "Configuring XFCE panel to auto-hide..."\n\
+    xfconf-query -c xfce4-panel -p /panels/panel-1/autohide-behavior -n -t int -s 1 || true\n\
+    xfconf-query -c xfce4-panel -p /panels/panel-1/enable-struts -n -t bool -s false || true\n\
+fi\n\
+\n\
+START_COMMAND="cd /pokemmo && ./PokeMMO.sh"\n\
 MAXIMIZE="false"\n\
 MAXIMIZE_SCRIPT=$STARTUPDIR/maximize_window.sh\n\
 DEFAULT_ARGS=""\n\
