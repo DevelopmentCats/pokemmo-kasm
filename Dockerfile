@@ -32,67 +32,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xcompmgr \
     && rm -rf /var/lib/apt/lists/*
 
-# Create wrapper script with Java optimizations
-RUN echo '#!/bin/bash\n\
-# Java 2D optimizations\n\
-export _JAVA_OPTIONS="\n\
--Dsun.java2d.opengl=true\n\
--Dsun.java2d.pmoffscreen=false\n\
--Dsun.java2d.xrender=true\n\
--Dsun.java2d.d3d=false\n\
--Dawt.useSystemAAFontSettings=on\n\
--Dswing.aatext=true\n\
--Dsun.java2d.ddoffscreen=false\n\
--Dsun.java2d.ddscale=true\n\
--XX:+UseG1GC\n\
--XX:MaxGCPauseMillis=50\n\
--XX:G1HeapRegionSize=32m\n\
--Xms512m\n\
--Xmx2048m"\n\
-\n\
-# Launch original PokeMMO script\n\
-exec ./PokeMMO.sh "$@"' > /pokemmo/pokemmo-optimized.sh && \
-    chmod +x /pokemmo/pokemmo-optimized.sh
-
-# Configure XFCE panel to auto-hide by default
-RUN mkdir -p /etc/xdg/xfce4/panel && \
-    echo '<?xml version="1.0" encoding="UTF-8"?>\n\
-<channel name="xfce4-panel" version="1.0">\n\
-  <property name="configver" type="int" value="2"/>\n\
-  <property name="panels" type="array">\n\
-    <value type="int" value="1"/>\n\
-    <property name="panel-1" type="empty">\n\
-      <property name="position" type="string" value="p=6;x=640;y=0"/>\n\
-      <property name="length" type="uint" value="100"/>\n\
-      <property name="position-locked" type="bool" value="true"/>\n\
-      <property name="size" type="uint" value="30"/>\n\
-      <property name="autohide-behavior" type="uint" value="1"/>\n\
-      <property name="enable-struts" type="bool" value="false"/>\n\
-      <property name="plugin-ids" type="array">\n\
-        <value type="int" value="1"/>\n\
-        <value type="int" value="3"/>\n\
-        <value type="int" value="15"/>\n\
-        <value type="int" value="4"/>\n\
-        <value type="int" value="5"/>\n\
-        <value type="int" value="6"/>\n\
-        <value type="int" value="2"/>\n\
-      </property>\n\
-    </property>\n\
-  </property>\n\
-  <property name="plugins" type="empty">\n\
-    <property name="plugin-1" type="string" value="applicationsmenu"/>\n\
-    <property name="plugin-2" type="string" value="actions"/>\n\
-    <property name="plugin-3" type="string" value="tasklist"/>\n\
-    <property name="plugin-15" type="string" value="separator">\n\
-      <property name="expand" type="bool" value="true"/>\n\
-      <property name="style" type="uint" value="0"/>\n\
-    </property>\n\
-    <property name="plugin-4" type="string" value="pager"/>\n\
-    <property name="plugin-5" type="string" value="clock"/>\n\
-    <property name="plugin-6" type="string" value="systray"/>\n\
-  </property>\n\
-</channel>' > /etc/xdg/xfce4/panel/default.xml
-
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
@@ -120,6 +59,41 @@ RUN mkdir -p /pokemmo && \
     echo "Setting ROM permissions..." && \
     find /pokemmo/roms -type f -name "*.nds" -o -name "*.gba" -exec chmod 644 {} + && \
     chown -R 1000:1000 /pokemmo
+
+# Create wrapper script with Java optimizations
+RUN echo '#!/bin/bash\n\
+# Java 2D optimizations\n\
+export _JAVA_OPTIONS="\n\
+-Dsun.java2d.opengl=true\n\
+-Dsun.java2d.pmoffscreen=false\n\
+-Dsun.java2d.xrender=true\n\
+-Dsun.java2d.d3d=false\n\
+-Dawt.useSystemAAFontSettings=on\n\
+-Dswing.aatext=true\n\
+-Dsun.java2d.ddoffscreen=false\n\
+-Dsun.java2d.ddscale=true\n\
+-XX:+UseG1GC\n\
+-XX:MaxGCPauseMillis=50\n\
+-XX:G1HeapRegionSize=32m\n\
+-Xms512m\n\
+-Xmx2048m"\n\
+\n\
+# Launch original PokeMMO script\n\
+exec ./PokeMMO.sh "$@"' > /pokemmo/pokemmo-optimized.sh && \
+    chmod +x /pokemmo/pokemmo-optimized.sh
+
+# Create desktop entry for PokeMMO
+RUN mkdir -p /usr/share/applications && \
+    echo '[Desktop Entry]\n\
+Type=Application\n\
+Name=PokeMMO\n\
+Comment=Pokemon MMO Game\n\
+Exec=/pokemmo/pokemmo-optimized.sh\n\
+Icon=/pokemmo/PokeMMO.png\n\
+Terminal=false\n\
+Categories=Game;\n\
+' > /usr/share/applications/pokemmo.desktop && \
+    chmod 644 /usr/share/applications/pokemmo.desktop
 
 # Create custom startup integration with proper X11 setup
 RUN echo '#!/usr/bin/env bash\n\
@@ -193,18 +167,44 @@ fi\n\
 ' > $STARTUPDIR/custom_startup.sh && \
     chmod +x $STARTUPDIR/custom_startup.sh
 
-# Create desktop entry for PokeMMO
-RUN mkdir -p /usr/share/applications && \
-    echo '[Desktop Entry]\n\
-Type=Application\n\
-Name=PokeMMO\n\
-Comment=Pokemon MMO Game\n\
-Exec=/pokemmo/PokeMMO.sh\n\
-Icon=/pokemmo/PokeMMO.png\n\
-Terminal=false\n\
-Categories=Game;\n\
-' > /usr/share/applications/pokemmo.desktop && \
-    chmod 644 /usr/share/applications/pokemmo.desktop
+# Configure XFCE panel to auto-hide by default
+RUN mkdir -p /etc/xdg/xfce4/panel && \
+    echo '<?xml version="1.0" encoding="UTF-8"?>\n\
+<channel name="xfce4-panel" version="1.0">\n\
+  <property name="configver" type="int" value="2"/>\n\
+  <property name="panels" type="array">\n\
+    <value type="int" value="1"/>\n\
+    <property name="panel-1" type="empty">\n\
+      <property name="position" type="string" value="p=6;x=640;y=0"/>\n\
+      <property name="length" type="uint" value="100"/>\n\
+      <property name="position-locked" type="bool" value="true"/>\n\
+      <property name="size" type="uint" value="30"/>\n\
+      <property name="autohide-behavior" type="uint" value="1"/>\n\
+      <property name="enable-struts" type="bool" value="false"/>\n\
+      <property name="plugin-ids" type="array">\n\
+        <value type="int" value="1"/>\n\
+        <value type="int" value="3"/>\n\
+        <value type="int" value="15"/>\n\
+        <value type="int" value="4"/>\n\
+        <value type="int" value="5"/>\n\
+        <value type="int" value="6"/>\n\
+        <value type="int" value="2"/>\n\
+      </property>\n\
+    </property>\n\
+  </property>\n\
+  <property name="plugins" type="empty">\n\
+    <property name="plugin-1" type="string" value="applicationsmenu"/>\n\
+    <property name="plugin-2" type="string" value="actions"/>\n\
+    <property name="plugin-3" type="string" value="tasklist"/>\n\
+    <property name="plugin-15" type="string" value="separator">\n\
+      <property name="expand" type="bool" value="true"/>\n\
+      <property name="style" type="uint" value="0"/>\n\
+    </property>\n\
+    <property name="plugin-4" type="string" value="pager"/>\n\
+    <property name="plugin-5" type="string" value="clock"/>\n\
+    <property name="plugin-6" type="string" value="systray"/>\n\
+  </property>\n\
+</channel>' > /etc/xdg/xfce4/panel/default.xml
 
 # Add OpenContainers labels
 LABEL org.opencontainers.image.source=https://github.com/developmentcats/pokemmo-kasm
