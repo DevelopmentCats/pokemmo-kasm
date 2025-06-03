@@ -89,7 +89,7 @@ if ! pgrep -x "xcompmgr" > /dev/null; then\n\
     sleep 1\n\
 fi\n\
 \n\
-START_COMMAND="cd /pokemmo && ./PokeMMO.sh"\n\
+START_COMMAND="cd /pokemmo && ./PokeMMO.sh --fullscreen"\n\
 MAXIMIZE="false"\n\
 MAXIMIZE_SCRIPT=$STARTUPDIR/maximize_window.sh\n\
 DEFAULT_ARGS=""\n\
