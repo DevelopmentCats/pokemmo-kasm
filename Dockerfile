@@ -32,6 +32,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xcompmgr \
     && rm -rf /var/lib/apt/lists/*
 
+# Create wrapper script with Java optimizations
+RUN echo '#!/bin/bash\n\
+# Java 2D optimizations\n\
+export _JAVA_OPTIONS="\n\
+-Dsun.java2d.opengl=true\n\
+-Dsun.java2d.pmoffscreen=false\n\
+-Dsun.java2d.xrender=true\n\
+-Dsun.java2d.d3d=false\n\
+-Dawt.useSystemAAFontSettings=on\n\
+-Dswing.aatext=true\n\
+-Dsun.java2d.ddoffscreen=false\n\
+-Dsun.java2d.ddscale=true\n\
+-XX:+UseG1GC\n\
+-XX:MaxGCPauseMillis=50\n\
+-XX:G1HeapRegionSize=32m\n\
+-Xms512m\n\
+-Xmx2048m"\n\
+\n\
+# Launch original PokeMMO script\n\
+exec ./PokeMMO.sh "$@"' > /pokemmo/pokemmo-optimized.sh && \
+    chmod +x /pokemmo/pokemmo-optimized.sh
+
 # Configure XFCE panel to auto-hide by default
 RUN mkdir -p /etc/xdg/xfce4/panel && \
     echo '<?xml version="1.0" encoding="UTF-8"?>\n\
@@ -135,7 +157,7 @@ if command -v xfconf-query >/dev/null 2>&1; then\n\
     xfconf-query -c xfce4-panel -p /panels/panel-1/enable-struts -n -t bool -s false || true\n\
 fi\n\
 \n\
-START_COMMAND="cd /pokemmo && ./PokeMMO.sh"\n\
+START_COMMAND="cd /pokemmo && ./pokemmo-optimized.sh"\n\
 MAXIMIZE="false"\n\
 MAXIMIZE_SCRIPT=$STARTUPDIR/maximize_window.sh\n\
 DEFAULT_ARGS=""\n\
